@@ -33,7 +33,7 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
-            show(app);
+            present(app);
             open_paths(app, args.into_iter().skip(1).map(PathBuf::from));
         }))
         .plugin(tauri_plugin_dialog::init())
@@ -169,6 +169,19 @@ fn show(app: &AppHandle) {
         let _ = window.unminimize();
         let _ = window.set_focus();
     }
+}
+
+/// Bring the window to the user even when it lives on another workspace.
+/// Wayland compositors ignore focus requests without an activation token (the
+/// token belongs to the second process, which only forwards its arguments), but
+/// remapping the surface makes them place it on the current workspace.
+fn present(app: &AppHandle) {
+    if let Some(window) = main_window(app) {
+        if window.is_visible().unwrap_or(false) {
+            let _ = window.hide();
+        }
+    }
+    show(app);
 }
 
 fn toggle(app: &AppHandle) {
