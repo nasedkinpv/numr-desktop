@@ -46,7 +46,7 @@ Known Linux quirk: WebKitGTK renders a blank window on the proprietary NVIDIA dr
 2. Add `docs/releases/vX.Y.Z.md`.
 3. Tag `vX.Y.Z` and push. The release workflow builds Linux x64/arm64 and macOS arm64/x64 bundles with `tauri-action`, publishes the GitHub release, and then updates the AUR package and the Homebrew cask.
 
-Secrets: `NUMR_WEB_TOKEN` (read access to the private numr-web submodule), `AUR_USERNAME`, `AUR_EMAIL`, `AUR_SSH_PRIVATE_KEY`, `HOMEBREW_TAP_DEPLOY_KEY`. macOS bundles are unsigned until Apple signing secrets are configured for `tauri-action`.
+Secrets: `NUMR_WEB_DEPLOY_KEY` (read-only deploy key of the private numr-web submodule), `AUR_USERNAME`, `AUR_EMAIL`, `AUR_SSH_PRIVATE_KEY`, `HOMEBREW_TAP_DEPLOY_KEY`. macOS bundles are unsigned until Apple signing secrets are configured for `tauri-action`.
 
 ## Repository layout
 
