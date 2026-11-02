@@ -4,7 +4,7 @@
 # Hyprland-only (tested on omarchy, 2x display). Needs: cargo-tauri, grim, wf-recorder,
 # ffmpeg, magick, jq, ydotool with ydotoold running as root (sudo ydotoold &).
 #
-#   scripts/capture-media.sh            # writes screenshots/finances.png and -demo.gif
+#   scripts/capture-media.sh            # writes screenshots/finances.png and screenshots/typing.gif
 #   NUMR_WEB_DIR=../numr-web scripts/capture-media.sh
 #
 # What it does: builds an opaque, square-cornered copy of the UI, runs `cargo tauri dev`
