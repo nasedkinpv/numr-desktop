@@ -17,8 +17,12 @@ sha256sums=('SKIP'
 
 pkgver() {
     cd numr-desktop
-    git describe --long --tags --abbrev=7 2>/dev/null | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g' ||
+    local described
+    if described=$(git describe --long --tags --abbrev=7 2>/dev/null); then
+        printf '%s' "$described" | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+    else
         printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+    fi
 }
 
 prepare() {
