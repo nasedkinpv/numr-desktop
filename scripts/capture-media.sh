@@ -61,6 +61,24 @@ until [ -n "$(numr_addr)" ]; do sleep 1; done
 sleep 5
 addr=$(numr_addr)
 
+# Hyprland rounds every window and draws a border; both come back after re-floating,
+# so strip them each time the window is placed, then prove it by sampling the corners.
+undecorate() {
+	for prop in "rounding 0" "border_size 0" "opaque 1" "no_blur 1" "no_shadow 1" "no_dim 1"; do
+		dsp "hl.dsp.window.set_prop({ window = \"address:$addr\", prop = \"${prop% *}\", value = ${prop#* } })"
+	done
+	hyprctl keyword general:border_size 0 > /dev/null
+	sleep 0.5
+}
+verify_corners() { # fails unless the top-left corner is flat header color (no rounding, no border)
+	grim -g "$win_x,$win_y 24x24" "$work/corner.png"
+	c0=$(magick "$work/corner.png" -format '%[pixel:p{0,0}]' info:)
+	c3=$(magick "$work/corner.png" -format '%[pixel:p{3,3}]' info:)
+	c8=$(magick "$work/corner.png" -format '%[pixel:p{8,8}]' info:)
+	[ "$c0" = "$c8" ] && [ "$c3" = "$c8" ] && return 0
+	echo "corner is decorated: $c0 / $c3 vs $c8 (rounding or border still on)" >&2
+	exit 1
+}
 place() { # width height; Hyprland re-centers after a resize, so move and verify afterwards
 	for _ in 1 2 3 4 5; do
 		floating=$(hyprctl clients -j | jq -r ".[] | select(.address==\"$addr\") | .floating")
@@ -72,14 +90,12 @@ place() { # width height; Hyprland re-centers after a resize, so move and verify
 		dsp "hl.dsp.window.move({ window = \"address:$addr\", x = $win_x, y = $win_y })"
 		sleep 0.6
 		pos=$(hyprctl clients -j | jq -r ".[] | select(.address==\"$addr\") | \"\\(.at[0]),\\(.at[1]) \\(.size[0])x\\(.size[1])\"")
-		[ "$pos" = "$win_x,$win_y $1x$2" ] && return 0
+		[ "$pos" = "$win_x,$win_y $1x$2" ] && { undecorate; return 0; }
 	done
 	echo "window did not settle at $win_x,$win_y $1x$2 (got $pos)" >&2
 	exit 1
 }
 place $png_w $png_h
-dsp "hl.dsp.window.set_prop({ window = \"address:$addr\", prop = \"rounding\", value = 0 })"
-hyprctl keyword general:border_size 0 > /dev/null
 hyprctl keyword input:accel_profile flat > /dev/null
 hyprctl keyword cursor:hide_on_key_press true > /dev/null
 hyprctl switchxkblayout keyd-virtual-keyboard 0 > /dev/null
@@ -96,6 +112,7 @@ sleep 1.5
 at $editor_x $editor_y; focus_numr; click; sleep 0.3
 ydo mousemove -w -x 0 -y 40; sleep 0.4; ydo mousemove -w -x 0 -y -6; sleep 0.6
 at $header_x $header_y; focus_numr; ydo key 42:1 42:0; sleep 1.2        # Shift tap hides the cursor
+verify_corners
 grim -g "$win_x,$win_y ${png_w}x${png_h}" "$out/finances.png"
 
 # 4. GIF: empty document, live typing, settings panel.
@@ -105,6 +122,7 @@ at $editor_x $editor_y; click; sleep 0.3
 at $header_x $header_y
 gear_x=$((win_x + 19)) gear_y=$((win_y + gif_h - 19))
 decimals_x=$((win_x + 188)) decimals_y=$((win_y + gif_h - 67))
+verify_corners
 wf-recorder -g "$win_x,$win_y ${gif_w}x${gif_h}" -f "$work/rec.mp4" -r 30 -c libx264rgb -p crf=8 > "$work/wf.log" 2>&1 &
 sleep 1.2
 focus_numr
