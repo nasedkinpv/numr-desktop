@@ -80,6 +80,8 @@ NUMR_WEB_DIR=../numr-web cargo tauri dev
 
 Shell code lives in `src/main.rs`; the webview side of the bridge is `numr-web/desktop/index.js`. The webview talks to the shell only through the commands and events listed there, and `capabilities/default.json` is the full list of what it may call. The root `package.json` exists only so the Tauri CLI resolves this directory as the project root instead of the submodule.
 
+README media: `scripts/capture-media.sh` regenerates `screenshots/` on a Hyprland desktop (it types `docs/media/demo.numr` into the running app and records it); see the script header for the tools it needs.
+
 Known Linux quirk: WebKitGTK renders a blank window on the proprietary NVIDIA driver without `WEBKIT_DISABLE_DMABUF_RENDERER=1`. The app sets it automatically when that driver is loaded.
 
 ## Release
@@ -99,7 +101,8 @@ numr-desktop/
 ├── capabilities/          # Webview permissions (ACL)
 ├── packaging/             # Linux .desktop template and MIME definition
 ├── icons/                 # App and tray icons
-├── scripts/build-ui.sh    # dist/ from numr-web
+├── scripts/               # build-ui.sh (dist/ from numr-web), capture-media.sh (README media)
+├── docs/media/            # Documents typed/loaded by capture-media.sh
 ├── numr-web/              # Submodule: shared web runtime and desktop HTML/bridge
 ├── aur/, aur-git/         # PKGBUILDs; the release workflow publishes numr-desktop-bin
 ├── homebrew/Casks/        # Cask published to nasedkinpv/homebrew-tap

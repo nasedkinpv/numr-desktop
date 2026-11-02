@@ -1,0 +1,11 @@
+# Weekend in Lisbon
+flights = 2 * 240 eur
+hotel = 3 * 95 eur
+flights + hotel
++ 15%            // taxes and fees
+trip = _
+trip in usd
+
+# Getting around
+313 km to miles
+2.5 hours to minutes
