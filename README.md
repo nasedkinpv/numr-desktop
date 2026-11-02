@@ -45,7 +45,7 @@ brew tap nasedkinpv/tap
 brew install --cask numr-desktop
 ```
 
-For a fully native macOS and iOS app, see [numr-apple](https://github.com/nasedkinpv/numr-apple).
+The macOS build is not yet signed or notarized, so Gatekeeper blocks the first launch: right-click the app and choose Open once, or run `xattr -dr com.apple.quarantine /Applications/numr.app`. For a fully native macOS and iOS app, see [numr-apple](https://github.com/nasedkinpv/numr-apple).
 
 ### Other Linux distributions
 
@@ -78,19 +78,9 @@ cargo tauri build          # release bundles in target/release/bundle/
 NUMR_WEB_DIR=../numr-web cargo tauri dev
 ```
 
-Shell code lives in `src/main.rs`; the webview side of the bridge is `numr-web/desktop/index.js`. The webview talks to the shell only through the commands and events listed there, and `capabilities/default.json` is the full list of what it may call. The root `package.json` exists only so the Tauri CLI resolves this directory as the project root instead of the submodule.
-
-README media: `scripts/capture-media.sh` regenerates `screenshots/` on a Hyprland desktop (it types `docs/media/demo.numr` into the running app and records it); see the script header for the tools it needs.
+Shell code lives in `src/main.rs`; the webview side of the bridge is `numr-web/desktop/index.js`. The webview talks to the shell only through the commands and events listed there, and `capabilities/default.json` is the full list of what it may call. Maintainer notes (release checklist, packaging, media) are in [AGENTS.md](AGENTS.md).
 
 Known Linux quirk: WebKitGTK renders a blank window on the proprietary NVIDIA driver without `WEBKIT_DISABLE_DMABUF_RENDERER=1`. The app sets it automatically when that driver is loaded.
-
-## Release
-
-1. Bump the `numr-web` submodule to the tagged web release and `version` in `Cargo.toml`, then `cargo build` to refresh `Cargo.lock`.
-2. Add `docs/releases/vX.Y.Z.md`.
-3. Tag `vX.Y.Z` and push. The release workflow builds Linux x64/arm64 and macOS arm64/x64 bundles with `tauri-action`, publishes the GitHub release, and then updates the AUR package and the Homebrew cask.
-
-Secrets: `AUR_USERNAME`, `AUR_EMAIL`, `AUR_SSH_PRIVATE_KEY`, `HOMEBREW_TAP_DEPLOY_KEY`. macOS bundles are unsigned until Apple signing secrets are configured for `tauri-action`.
 
 ## Repository layout
 
@@ -102,11 +92,10 @@ numr-desktop/
 ├── packaging/             # Linux .desktop template and MIME definition
 ├── icons/                 # App and tray icons
 ├── scripts/               # build-ui.sh (dist/ from numr-web), capture-media.sh (README media)
-├── docs/media/            # Documents typed/loaded by capture-media.sh
 ├── numr-web/              # Submodule: shared web runtime and desktop HTML/bridge
-├── aur/, aur-git/         # PKGBUILDs; the release workflow publishes numr-desktop-bin
-├── homebrew/Casks/        # Cask published to nasedkinpv/homebrew-tap
-├── docs/releases/         # Release notes, one file per tag
+├── aur/, aur-git/         # AUR packages
+├── homebrew/Casks/        # Homebrew cask
+├── docs/                  # Release notes and media sources
 └── screenshots/
 ```
 
