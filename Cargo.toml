@@ -1,6 +1,6 @@
 [package]
 name = "numr-desktop"
-version = "0.9.1"
+version = "0.9.2"
 description = "Desktop app for the numr text calculator"
 authors = ["nasedkinpv"]
 license = "MIT"
