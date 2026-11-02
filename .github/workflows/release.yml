@@ -1,0 +1,167 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify tag matches Cargo version and release notes exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_version="${GITHUB_REF_NAME#v}"
+          cargo_version="$(sed -n '/^\[package\]/,/^\[/s/^version = "\([^"]*\)"/\1/p' Cargo.toml)"
+          test "$tag_version" = "$cargo_version"
+          test -s "docs/releases/${GITHUB_REF_NAME}.md"
+
+  build:
+    needs: verify
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+          - os: ubuntu-22.04-arm
+          - os: macos-latest
+            args: --target aarch64-apple-darwin
+          - os: macos-13
+            args: --target x86_64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.NUMR_WEB_TOKEN || github.token }}
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Read release notes
+        id: notes
+        shell: bash
+        run: |
+          {
+            echo 'body<<NOTES_EOF'
+            cat "docs/releases/${GITHUB_REF_NAME}.md"
+            echo 'NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: numr desktop ${{ github.ref_name }}
+          releaseBody: ${{ steps.notes.outputs.body }}
+          releaseDraft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          args: ${{ matrix.args }}
+
+  # Update AUR binary package - skip for pre-releases
+  aur:
+    needs: build
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download packages and get sha256
+        id: sha256
+        run: |
+          base="https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}"
+          curl -fsSL "$base/numr_${{ steps.version.outputs.version }}_amd64.deb" -o amd64.deb
+          curl -fsSL "$base/numr_${{ steps.version.outputs.version }}_arm64.deb" -o arm64.deb
+          echo "sha256_x86_64=$(sha256sum amd64.deb | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha256_aarch64=$(sha256sum arm64.deb | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Update PKGBUILD
+        run: |
+          sed -i "s/^pkgver=.*/pkgver=${{ steps.version.outputs.version }}/" aur/PKGBUILD
+          sed -i "s/^sha256sums_x86_64=.*/sha256sums_x86_64=('${{ steps.sha256.outputs.sha256_x86_64 }}')/" aur/PKGBUILD
+          sed -i "s/^sha256sums_aarch64=.*/sha256sums_aarch64=('${{ steps.sha256.outputs.sha256_aarch64 }}')/" aur/PKGBUILD
+
+      - name: Generate .SRCINFO
+        uses: docker://archlinux:latest
+        with:
+          entrypoint: bash
+          args: |
+            -c "
+            pacman -Sy --noconfirm base-devel &&
+            useradd -m builder &&
+            chown -R builder:builder aur &&
+            cd aur &&
+            su builder -c 'makepkg --printsrcinfo > .SRCINFO'
+            "
+
+      - name: Publish to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v4.1.1
+        with:
+          pkgname: numr-desktop-bin
+          pkgbuild: ./aur/PKGBUILD
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "Update to ${{ steps.version.outputs.version }}"
+          assets: |
+            ./aur/.SRCINFO
+
+  # Update Homebrew cask - skip for pre-releases
+  homebrew:
+    needs: build
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download images and get sha256
+        id: sha256
+        run: |
+          base="https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}"
+          curl -fsSL "$base/numr_${{ steps.version.outputs.version }}_aarch64.dmg" -o arm.dmg
+          curl -fsSL "$base/numr_${{ steps.version.outputs.version }}_x64.dmg" -o intel.dmg
+          echo "sha256_arm=$(sha256sum arm.dmg | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha256_intel=$(sha256sum intel.dmg | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Update cask
+        run: |
+          sed -i 's/version ".*"/version "${{ steps.version.outputs.version }}"/' homebrew/Casks/numr-desktop.rb
+          sed -i 's/sha256 arm: *"[^"]*"/sha256 arm:   "${{ steps.sha256.outputs.sha256_arm }}"/' homebrew/Casks/numr-desktop.rb
+          sed -i 's/intel: *"[0-9a-fSKIP_INTEL]*"$/intel: "${{ steps.sha256.outputs.sha256_intel }}"/' homebrew/Casks/numr-desktop.rb
+
+      - name: Push to Homebrew tap
+        uses: cpina/github-action-push-to-another-repository@v1.7.2
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+        with:
+          source-directory: homebrew/Casks
+          destination-github-username: nasedkinpv
+          destination-repository-name: homebrew-tap
+          target-directory: Casks
+          target-branch: main
+          commit-message: "Update numr-desktop cask to ${{ steps.version.outputs.version }}"

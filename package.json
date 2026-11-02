@@ -1,0 +1,5 @@
+{
+  "name": "numr-desktop",
+  "private": true,
+  "description": "Marks the project root for the Tauri CLI; the app has no JavaScript dependencies."
+}

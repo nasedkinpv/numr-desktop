@@ -1,0 +1,3 @@
+[submodule "numr-web"]
+	path = numr-web
+	url = https://github.com/nasedkinpv/numr-web.git

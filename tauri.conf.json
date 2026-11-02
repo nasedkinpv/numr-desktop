@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "numr",
+  "mainBinaryName": "numr-desktop",
+  "identifier": "cc.numr.desktop",
+  "build": {
+    "frontendDist": "dist",
+    "beforeDevCommand": "sh scripts/build-ui.sh",
+    "beforeBuildCommand": "sh scripts/build-ui.sh"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "numr",
+        "width": 1040,
+        "height": 720,
+        "minWidth": 480,
+        "minHeight": 320,
+        "center": true,
+        "decorations": false,
+        "transparent": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self' 'wasm-unsafe-eval'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data:",
+        "connect-src": "'self' ipc: http://ipc.localhost https://open.er-api.com https://api.coingecko.com"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "deb",
+      "rpm",
+      "appimage",
+      "dmg"
+    ],
+    "category": "Utility",
+    "shortDescription": "Natural-language text calculator",
+    "longDescription": "numr evaluates calculations written like notes: variables, percentages, units, currencies with live rates, and grouped totals.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/64x64.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.png"
+    ],
+    "fileAssociations": [
+      {
+        "ext": [
+          "numr"
+        ],
+        "name": "numr document",
+        "description": "numr calculation document",
+        "mimeType": "text/x-numr",
+        "role": "Editor"
+      }
+    ],
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": false
+      },
+      "deb": {
+        "desktopTemplate": "packaging/numr.desktop",
+        "files": {
+          "/usr/share/mime/packages/numr.xml": "packaging/numr.xml"
+        }
+      },
+      "rpm": {
+        "desktopTemplate": "packaging/numr.desktop",
+        "files": {
+          "/usr/share/mime/packages/numr.xml": "packaging/numr.xml"
+        }
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "12.0"
+    }
+  }
+}

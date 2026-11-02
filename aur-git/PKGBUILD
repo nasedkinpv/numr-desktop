@@ -1,0 +1,44 @@
+# Maintainer: nasedkinpv <nasedkinpv@users.noreply.github.com>
+pkgname=numr-desktop-git
+pkgver=0.9.1
+pkgrel=1
+pkgdesc="Desktop app for the numr text calculator: variables, units, currencies, live rates (git version)"
+arch=('x86_64' 'aarch64')
+url="https://github.com/nasedkinpv/numr-desktop"
+license=('MIT')
+depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator' 'librsvg' 'gcc-libs' 'glibc')
+makedepends=('cargo' 'cargo-tauri' 'git')
+provides=('numr-desktop')
+conflicts=('numr-desktop' 'numr-desktop-bin')
+source=("git+$url.git"
+        "git+https://github.com/nasedkinpv/numr-web.git")
+sha256sums=('SKIP'
+            'SKIP')
+
+pkgver() {
+    cd numr-desktop
+    git describe --long --tags --abbrev=7 2>/dev/null | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g' ||
+        printf 'r%s.%s' "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+}
+
+prepare() {
+    cd numr-desktop
+    git submodule init
+    git config submodule.numr-web.url "$srcdir/numr-web"
+    git -c protocol.file.allow=always submodule update
+    cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+    cd numr-desktop
+    # The deb bundler needs no external tools; its data.tar.gz is the install tree.
+    cargo tauri build --bundles deb -- --frozen
+}
+
+package() {
+    cd numr-desktop
+    bsdtar -xf target/release/bundle/deb/numr_*.deb data.tar.gz
+    bsdtar -xf data.tar.gz -C "$pkgdir"
+    find "$pkgdir" -type d -exec chmod 755 {} +
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
