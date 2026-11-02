@@ -12,6 +12,7 @@ Maintainer notes for numr-desktop. User-facing documentation lives in `README.md
 - `aur/` publishes `numr-desktop-bin` from the release `.deb`; `aur-git/` builds from source with `cargo-tauri` and the deb bundler. `homebrew/Casks/numr-desktop.rb` is pushed to `nasedkinpv/homebrew-tap/Casks`.
 - `docs/releases/vX.Y.Z.md`: release notes, one file per tag, used as the GitHub release body.
 - `docs/media/`: the documents `scripts/capture-media.sh` loads and types when regenerating `screenshots/`.
+- `icons/`: generated with `cargo tauri icon` from a 1024px render of numr-apple's `Numr/AppIcon.icon`, produced on a Mac by `scripts/render-apple-icon.sh` (actool + IconServices via `scripts/render-icon.swift`), so Linux, macOS and the Apple app share one icon. `icons/tray/` is hand-made.
 
 ## Conventions
 
