@@ -24,7 +24,7 @@ Desktop app for [numr](https://github.com/nasedkinpv/numr), the natural-language
 - Keyboard: Ctrl/Cmd+N new, Ctrl/Cmd+O open, Ctrl/Cmd+S save, Ctrl/Cmd+R refresh rates, Ctrl/Cmd+W hide, Alt+Z wrap lines
 
 <p align="center">
-  <img src="screenshots/numr-desktop-demo.gif" width="800" alt="numr desktop demo: scrolling a finance document, opening settings, toggling line numbers, and changing precision">
+  <img src="screenshots/numr-desktop-demo.gif" width="800" alt="numr desktop demo: typing a trip budget with live results, then opening settings and changing precision">
 </p>
 
 ## Installation
