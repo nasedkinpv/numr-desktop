@@ -106,11 +106,9 @@ header_x=$((win_x + 700)) header_y=$((win_y + 18))   # empty drag area: pointer 
 editor_x=$((win_x + 400)) editor_y=$((win_y + 300))
 new_x=$((win_x + 880)) new_y=$((win_y + 18))         # "New document" header button
 
-# 3. Screenshot: scroll the sample document to its interesting part.
+# 3. Screenshot: the showcase document (fits the window, no scrolling).
 "$root/target/debug/numr-desktop" "$root/docs/media/screenshot.numr" || true
 sleep 1.5
-at $editor_x $editor_y; focus_numr; click; sleep 0.3
-ydo mousemove -w -x 0 -y 40; sleep 0.4; ydo mousemove -w -x 0 -y -6; sleep 0.6
 at $header_x $header_y; focus_numr; ydo key 42:1 42:0; sleep 1.2        # Shift tap hides the cursor
 verify_corners
 grim -g "$win_x,$win_y ${png_w}x${png_h}" "$out/finances.png"
