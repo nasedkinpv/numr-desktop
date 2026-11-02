@@ -4,7 +4,7 @@
 # Hyprland-only (tested on omarchy, 2x display). Needs: cargo-tauri, grim, wf-recorder,
 # ffmpeg, magick, jq, ydotool with ydotoold running as root (sudo ydotoold &).
 #
-#   scripts/capture-media.sh            # writes screenshots/numr-desktop-linux.png and -demo.gif
+#   scripts/capture-media.sh            # writes screenshots/finances.png and -demo.gif
 #   NUMR_WEB_DIR=../numr-web scripts/capture-media.sh
 #
 # What it does: builds an opaque, square-cornered copy of the UI, runs `cargo tauri dev`
@@ -96,7 +96,7 @@ sleep 1.5
 at $editor_x $editor_y; focus_numr; click; sleep 0.3
 ydo mousemove -w -x 0 -y 40; sleep 0.4; ydo mousemove -w -x 0 -y -6; sleep 0.6
 at $header_x $header_y; focus_numr; ydo key 42:1 42:0; sleep 1.2        # Shift tap hides the cursor
-grim -g "$win_x,$win_y ${png_w}x${png_h}" "$out/numr-desktop-linux.png"
+grim -g "$win_x,$win_y ${png_w}x${png_h}" "$out/finances.png"
 
 # 4. GIF: empty document, live typing, settings panel.
 place $gif_w $gif_h
@@ -116,5 +116,5 @@ pkill -INT wf-recorder; sleep 2
 
 ffmpeg -v error -y -i "$work/rec.mp4" \
 	-vf "fps=15,scale=${gif_w}:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=192:stats_mode=diff[p];[s1][p]paletteuse=dither=none:diff_mode=rectangle" \
-	"$out/numr-desktop-demo.gif"
+	"$out/typing.gif"
 ls -la "$out"

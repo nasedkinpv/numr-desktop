@@ -11,7 +11,7 @@
 Desktop app for [numr](https://github.com/nasedkinpv/numr), the natural-language text calculator. A thin [Tauri 2](https://tauri.app) shell around the [numr-web](https://github.com/nasedkinpv/numr-web) runtime: the same editor and WebAssembly engine as [numr.cc](https://numr.cc), in a native window with a tray icon, file dialogs, and `.numr` file association.
 
 <p align="center">
-  <img src="screenshots/numr-desktop-linux.png" width="800" alt="numr desktop on Linux evaluating a monthly finance document with currencies and continuations">
+  <img src="screenshots/finances.png" width="800" alt="numr desktop on Linux evaluating a monthly finance document with currencies and continuations">
 </p>
 
 ## Features
@@ -24,7 +24,7 @@ Desktop app for [numr](https://github.com/nasedkinpv/numr), the natural-language
 - Keyboard: Ctrl/Cmd+N new, Ctrl/Cmd+O open, Ctrl/Cmd+S save, Ctrl/Cmd+R refresh rates, Ctrl/Cmd+W hide, Alt+Z wrap lines
 
 <p align="center">
-  <img src="screenshots/numr-desktop-demo.gif" width="800" alt="numr desktop demo: typing a trip budget with live results, then opening settings and changing precision">
+  <img src="screenshots/typing.gif" width="800" alt="numr desktop demo: typing a trip budget with live results, then opening settings and changing precision">
 </p>
 
 ## Installation
