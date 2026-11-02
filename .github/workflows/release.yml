@@ -38,14 +38,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-
-      # numr-web is private: its read-only deploy key lives in NUMR_WEB_DEPLOY_KEY.
-      - uses: webfactory/ssh-agent@v0.9.1
         with:
-          ssh-private-key: ${{ secrets.NUMR_WEB_DEPLOY_KEY }}
-
-      - name: Check out numr-web submodule
-        run: git -c url."git@github.com:".insteadOf=https://github.com/ submodule update --init --depth 1
+          submodules: true
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
