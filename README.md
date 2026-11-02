@@ -1,27 +1,69 @@
-# numr desktop
+<p align="center">
+  <img src="numr-github-header.png" alt="numr">
+</p>
 
-Desktop app for [numr](https://github.com/nasedkinpv/numr), the natural-language text calculator. A thin [Tauri 2](https://tauri.app) shell around the [numr-web](https://github.com/nasedkinpv/numr-web) runtime: the same `app.js` and WebAssembly packages as [numr.cc](https://numr.cc), inside a native window with a tray icon, file dialogs, and `.numr` file association.
+<p align="center">
+  <a href="https://github.com/nasedkinpv/numr-desktop/actions/workflows/ci.yml"><img src="https://github.com/nasedkinpv/numr-desktop/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/nasedkinpv/numr-desktop/releases/latest"><img src="https://img.shields.io/github/v/release/nasedkinpv/numr-desktop?label=release" alt="Release"></a>
+  <a href="https://aur.archlinux.org/packages/numr-desktop-bin"><img src="https://img.shields.io/aur/version/numr-desktop-bin?label=AUR" alt="AUR"></a>
+</p>
 
-- Linux: WebKitGTK, native Wayland and HiDPI. Packages: AUR `numr-desktop-bin` / `numr-desktop-git`, `.deb`, `.rpm`, AppImage.
-- macOS: WKWebView, menu-bar app without a Dock icon. Homebrew cask `numr-desktop`, `.dmg`. For a fully native macOS and iOS app see numr-apple.
+Desktop app for [numr](https://github.com/nasedkinpv/numr), the natural-language text calculator. A thin [Tauri 2](https://tauri.app) shell around the [numr-web](https://github.com/nasedkinpv/numr-web) runtime: the same editor and WebAssembly engine as [numr.cc](https://numr.cc), in a native window with a tray icon, file dialogs, and `.numr` file association.
 
-## Install
+<p align="center">
+  <img src="screenshots/numr-desktop-linux.png" width="800" alt="numr desktop on Linux evaluating variables, unit conversions, statistics, and live currency rates">
+</p>
+
+## Features
+
+- Natural-language calculations with variables, continuations, percentages, units, currencies with live rates, and grouped totals
+- Frameless window with a draggable header; closing hides to the tray, a second launch or the tray brings it back
+- `.numr` documents: file association, open and save dialogs, drag-and-drop, command-line arguments
+- Settings panel for line numbers, line wrapping, and display precision
+- Linux: WebKitGTK on native Wayland with HiDPI; macOS: WKWebView menu-bar app without a Dock icon
+- Keyboard: Ctrl/Cmd+N new, Ctrl/Cmd+O open, Ctrl/Cmd+S save, Ctrl/Cmd+R refresh rates, Ctrl/Cmd+W hide, Alt+Z wrap lines
+
+<p align="center">
+  <img src="screenshots/numr-desktop-settings.png" width="800" alt="numr desktop settings panel with line numbers, line wrapping, and decimal places">
+</p>
+
+## Installation
+
+Release bundles are on the [latest release](https://github.com/nasedkinpv/numr-desktop/releases/latest) page: `.deb`, `.rpm`, and AppImage for Linux x64 and arm64, `.dmg` for macOS Apple Silicon and Intel.
+
+### Arch Linux (AUR)
 
 ```bash
-# Arch Linux
-yay -S numr-desktop-bin        # release build from GitHub
-yay -S numr-desktop-git        # built from main
+yay -S numr-desktop-bin      # release build
+yay -S numr-desktop-git      # built from main
+```
 
-# macOS
+### macOS (Homebrew)
+
+```bash
 brew tap nasedkinpv/tap
 brew install --cask numr-desktop
 ```
 
-Other Linux distributions: download the `.deb`, `.rpm`, or AppImage from the [latest release](https://github.com/nasedkinpv/numr-desktop/releases/latest). Runtime packages: `webkit2gtk-4.1`, `gtk3`, `libayatana-appindicator`, `librsvg`.
+For a fully native macOS and iOS app, see [numr-apple](https://github.com/nasedkinpv/numr-apple).
 
-## Develop
+### Other Linux distributions
 
-Prerequisites: Rust 1.88+, [`cargo-tauri`](https://tauri.app/reference/cli/) 2.x (`pacman -S cargo-tauri` or `cargo install tauri-cli --locked`), and on Linux the WebKitGTK development packages listed in the [Tauri prerequisites](https://tauri.app/start/prerequisites/).
+Install the `.deb`, `.rpm`, or AppImage from the release page. Runtime dependencies: `webkit2gtk-4.1`, `gtk3`, `libayatana-appindicator`, `librsvg`.
+
+## The numr family
+
+| Repository | What it is |
+|---|---|
+| [numr](https://github.com/nasedkinpv/numr) | Rust engine, TUI, CLI, and JSON-RPC server |
+| [numr-web](https://github.com/nasedkinpv/numr-web) | Web app at [numr.cc](https://numr.cc), `<numr-calculator>` element, and the desktop HTML/bridge used here |
+| numr-desktop | This repository: Tauri shell and desktop packaging |
+| [numr-apple](https://github.com/nasedkinpv/numr-apple) | Native SwiftUI app for iOS and macOS |
+| [omarchy-numr](https://github.com/nasedkinpv/omarchy-numr), [elephant-numr](https://github.com/nasedkinpv/elephant-numr) | Launcher integrations |
+
+## Development
+
+Prerequisites: Rust 1.88+, [`cargo-tauri`](https://tauri.app/reference/cli/) 2.x (`pacman -S cargo-tauri` or `cargo install tauri-cli --locked`), and on Linux the WebKitGTK development packages from the [Tauri prerequisites](https://tauri.app/start/prerequisites/).
 
 ```bash
 git clone --recurse-submodules https://github.com/nasedkinpv/numr-desktop.git
@@ -55,14 +97,16 @@ numr-desktop/
 ├── src/main.rs            # Tauri shell: window, tray, menu, dialogs, file opening
 ├── tauri.conf.json        # App, window, CSP, bundle targets, file associations
 ├── capabilities/          # Webview permissions (ACL)
+├── packaging/             # Linux .desktop template and MIME definition
 ├── icons/                 # App and tray icons
 ├── scripts/build-ui.sh    # dist/ from numr-web
 ├── numr-web/              # Submodule: shared web runtime and desktop HTML/bridge
-├── aur/, aur-git/         # PKGBUILDs published by the release workflow
+├── aur/, aur-git/         # PKGBUILDs; the release workflow publishes numr-desktop-bin
 ├── homebrew/Casks/        # Cask published to nasedkinpv/homebrew-tap
-└── docs/releases/         # Release notes, one file per tag
+├── docs/releases/         # Release notes, one file per tag
+└── screenshots/
 ```
 
 ## License
 
-MIT
+[MIT](LICENSE)
