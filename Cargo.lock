@@ -2269,6 +2269,7 @@ dependencies = [
 name = "numr-desktop"
 version = "0.9.2"
 dependencies = [
+ "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-clipboard-manager",

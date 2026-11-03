@@ -2,14 +2,21 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "What the numr main window may ask the shell for.",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
+    "core:window:allow-set-title",
     "clipboard-manager:allow-write-text",
     {
       "identifier": "opener:allow-open-url",
-      "allow": [{ "url": "https://numr.cc/*" }]
+      "allow": [
+        {
+          "url": "https://numr.cc/*"
+        }
+      ]
     }
   ]
 }
