@@ -17,11 +17,13 @@ Desktop app for [numr](https://github.com/nasedkinpv/numr), the natural-language
 ## Features
 
 - Natural-language calculations with variables, continuations, percentages, units, currencies with live rates, and grouped totals
+- Real documents: the open file name and an unsaved marker in the header, Ctrl/Cmd+S saves in place, Ctrl/Cmd+Shift+S saves as, and the last document reopens on launch
+- Exchange rates share one cache with the numr TUI and CLI (`rates.json` in the numr config directory), so all three agree and fetch once
+- Settings panel for line numbers, line wrapping, display precision, and a System/Dark/Light theme
 - Frameless window with a draggable header; closing hides to the tray, a second launch or the tray brings it back
 - `.numr` documents: file association, open and save dialogs, drag-and-drop, command-line arguments
-- Settings panel for line numbers, line wrapping, and display precision
 - Linux: WebKitGTK on native Wayland with HiDPI; macOS: WKWebView menu-bar app without a Dock icon
-- Keyboard: Ctrl/Cmd+N new, Ctrl/Cmd+O open, Ctrl/Cmd+S save, Ctrl/Cmd+R refresh rates, Ctrl/Cmd+W hide, Alt+Z wrap lines
+- Keyboard: Ctrl/Cmd+N new, Ctrl/Cmd+O open, Ctrl/Cmd+S save, Ctrl/Cmd+Shift+S save as, Ctrl/Cmd+R refresh rates, Ctrl/Cmd+W hide, Alt+Z wrap lines
 
 <p align="center">
   <img src="screenshots/typing.gif" width="800" alt="numr desktop demo: typing a trip budget with live results, then opening settings and changing precision">

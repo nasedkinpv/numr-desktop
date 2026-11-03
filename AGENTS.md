@@ -4,7 +4,7 @@ Maintainer notes for numr-desktop. User-facing documentation lives in `README.md
 
 ## Repository Layout
 
-- `src/main.rs`: the whole Tauri shell. Window, tray, macOS menu, file dialogs, `.numr` opening (CLI arguments, second instance, drag-and-drop, macOS `Opened`), and the four commands the webview may call.
+- `src/main.rs`: the whole Tauri shell. Window, tray, macOS menu, file dialogs, `.numr` opening (CLI arguments, second instance, drag-and-drop, macOS `Opened`), the open-file state (Save, Save As, last document remembered in the app config directory), the exchange-rate cache shared with the TUI/CLI (`rates.json` in numr-core's format and location, 1-hour expiry), and the commands the webview may call.
 - `numr-web/`: git submodule. The frontend (`desktop/index.html`, `desktop/index.js`, shared `app.js`, WASM packages) is owned there; this repository never edits it. `scripts/build-ui.sh` copies what the webview needs into `dist/` before every dev run and build. `NUMR_WEB_DIR=../numr-web` points it at a sibling checkout for side-by-side work.
 - `capabilities/default.json`: the complete ACL for the main window. Keep it minimal; file paths never cross the webview boundary because dialogs and file I/O run in Rust.
 - `packaging/`: Linux `.desktop` template (adds `%F` so file managers can open documents) and the `text/x-numr` MIME definition. Tauri's default template provides neither.

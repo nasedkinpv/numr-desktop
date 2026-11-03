@@ -56,6 +56,8 @@ fn main() {
             save_document,
             save_document_as,
             close_document,
+            shared_rates,
+            store_shared_rates,
             hide_window
         ])
         .setup(|app| {
@@ -171,6 +173,63 @@ fn close_document(app: AppHandle) {
 #[tauri::command]
 fn hide_window(window: WebviewWindow) {
     let _ = window.hide();
+}
+
+// ---------------------------------------------------------------------------
+// Exchange-rate cache shared with the numr TUI and CLI
+// ---------------------------------------------------------------------------
+
+/// numr-core writes `{"timestamp": <unix seconds>, "rates": {"EUR": 0.92, …}}`
+/// to `<config>/numr/rates.json` and treats entries older than an hour as expired.
+const SHARED_RATES_TTL_SECS: u64 = 3600;
+
+fn shared_rates_path() -> Option<PathBuf> {
+    directories::ProjectDirs::from("", "", "numr").map(|dirs| dirs.config_dir().join("rates.json"))
+}
+
+fn unix_now() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0)
+}
+
+/// Fresh shared rates as `{ rates, timestamp }` with a millisecond timestamp, or `None`.
+#[tauri::command]
+fn shared_rates() -> Option<serde_json::Value> {
+    let content = fs::read_to_string(shared_rates_path()?).ok()?;
+    let cached: serde_json::Value = serde_json::from_str(&content).ok()?;
+    let timestamp = cached.get("timestamp")?.as_u64()?;
+    let now = unix_now();
+    if timestamp > now || now - timestamp >= SHARED_RATES_TTL_SECS {
+        return None;
+    }
+    let rates = cached.get("rates")?.as_object()?;
+    (!rates.is_empty())
+        .then(|| serde_json::json!({ "rates": rates, "timestamp": timestamp * 1000 }))
+}
+
+/// Writes rates fetched by the webview in numr-core's format, atomically.
+#[tauri::command]
+fn store_shared_rates(
+    rates: serde_json::Map<String, serde_json::Value>,
+    timestamp: u64,
+) -> Result<(), String> {
+    let path = shared_rates_path().ok_or("no config directory")?;
+    let content = serde_json::to_string_pretty(&serde_json::json!({
+        "timestamp": timestamp / 1000,
+        "rates": rates,
+    }))
+    .map_err(|e| e.to_string())?;
+    let parent = path.parent().ok_or("no parent directory")?;
+    fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    let temp = parent.join(format!(".rates.json.{}", std::process::id()));
+    fs::write(&temp, content)
+        .and_then(|_| fs::rename(&temp, &path))
+        .map_err(|e| {
+            let _ = fs::remove_file(&temp);
+            format!("{}: {e}", path.display())
+        })
 }
 
 // ---------------------------------------------------------------------------
